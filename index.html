@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIE Matrix — Révision collaborative</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0d;--s1:#1a1917;--s2:#242220;--br:#332f2c;--ac:#e8c547;--ac2:#f4a261;--tx:#ede8e2;--mu:#8a8279;--ok:#4caf78;--wn:#f4a261;--nk:#e05c5c;--vd:#5a8ac4;--at:#9b59d4;--r:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'DM Mono',monospace;font-size:13px}
+header{background:var(--s1);border-bottom:1px solid var(--br);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo h1{font-family:'Fraunces',serif;font-size:19px;font-weight:300;color:var(--ac)}
+.logo span{color:var(--mu);font-size:10px;margin-left:10px}
+.hstats{display:flex;gap:10px;align-items:center}
+.pill{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--br);border-radius:20px;padding:3px 10px;font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%}
+.layout{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 57px)}
+.sidebar{background:var(--s1);border-right:1px solid var(--br);overflow-y:auto;display:flex;flex-direction:column}
+.sb-sec{padding:14px;border-bottom:1px solid var(--br)}
+.sb-sec h3{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;font-family:'Fraunces',serif}
+.mode-btns{display:flex;gap:5px}
+.mbtn{flex:1;padding:7px 6px;border:1px solid var(--br);background:var(--s2);color:var(--mu);font-family:'DM Mono',monospace;font-size:10px;border-radius:var(--r);cursor:pointer}
+.mbtn.active{background:var(--ac);color:var(--bg);border-color:var(--ac);font-weight:500}
+.fg{margin-bottom:9px}
+.fg label{display:block;color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+select,input[type=text]{width:100%;background:var(--s2);border:1px solid var(--br);color:var(--tx);font-family:'DM Mono',monospace;font-size:12px;padding:6px 9px;border-radius:var(--r);outline:none}
+.chips{display:flex;flex-direction:column;gap:3px}
+.chip{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r);cursor:pointer}
+.chip:hover,.chip.sel{border-color:var(--ac)}
+.chip-role{color:var(--ac);font-size:11px}
+.chip-inter{color:var(--mu);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.chip-badge{font-size:9px;padding:2px 5px;border-radius:8px;white-space:nowrap;background:rgba(90,138,196,.2);color:var(--vd);border:1px solid var(--vd)}
+.chip-badge.at{background:rgba(155,89,212,.15);color:var(--at);border-color:var(--at)}
+.chip-badge.done{background:rgba(76,175,120,.15);color:var(--ok);border-color:var(--ok)}
+.prog-wrap{background:var(--s2);border:1px solid var(--br);border-radius:20px;height:7px;overflow:hidden;margin-top:5px}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:20px;transition:width .4s}
+.main{overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.ep{background:var(--s1);border:1px solid var(--br);border-radius:8px;padding:18px;display:none}
+.ep h2{font-family:'Fraunces',serif;font-size:17px;font-weight:300;color:var(--ac);margin-bottom:4px}
+.ep-ctx{color:var(--mu);font-size:11px;line-height:1.7;margin-bottom:14px}
+.stbts{display:flex;gap:6px;margin-bottom:12px}
+.stbt{flex:1;padding:11px;border:2px solid var(--br);background:var(--s2);color:var(--mu);font-size:20px;border-radius:var(--r);cursor:pointer;text-align:center;font-family:'DM Mono',monospace}
+.stbt.ok{background:rgba(76,175,120,.2);border-color:var(--ok)}
+.stbt.wn{background:rgba(244,162,97,.2);border-color:var(--wn)}
+.stbt.nk{background:rgba(224,92,92,.2);border-color:var(--nk)}
+.stbt-lbl{font-size:9px;display:block;margin-top:2px;color:var(--mu)}
+textarea{width:100%;min-height:70px;background:var(--s2);border:1px solid var(--br);color:var(--tx);font-family:'DM Mono',monospace;font-size:12px;padding:9px;border-radius:var(--r);outline:none;resize:vertical;margin-bottom:12px}
+.ep-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn-ok{background:var(--ac);color:var(--bg);border:none;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;padding:9px 18px;border-radius:var(--r);cursor:pointer}
+.btn-ok:disabled{opacity:.4;cursor:not-allowed}
+.btn-no{background:none;border:1px solid var(--br);color:var(--mu);font-family:'DM Mono',monospace;font-size:12px;padding:9px 18px;border-radius:var(--r);cursor:pointer}
+.mwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:11px}
+th{background:var(--s1);color:var(--mu);padding:7px 9px;text-align:left;border:1px solid var(--br);font-size:10px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;z-index:2}
+td{padding:6px 9px;border:1px solid var(--br);vertical-align:top}
+tr:hover td{background:rgba(255,255,255,.015)}
+tr.vd td{background:rgba(26,37,53,.4)}
+tr.rv td{background:rgba(30,21,53,.4)}
+.sb{display:inline-flex;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500}
+.s-ok{background:rgba(76,175,120,.15);color:var(--ok);border:1px solid rgba(76,175,120,.3)}
+.s-wn{background:rgba(244,162,97,.15);color:var(--wn);border:1px solid rgba(244,162,97,.3)}
+.s-nk{background:rgba(224,92,92,.15);color:var(--nk);border:1px solid rgba(224,92,92,.3)}
+.s-vd{background:rgba(90,138,196,.15);color:var(--vd);border:1px solid rgba(90,138,196,.3)}
+.s-at{background:rgba(155,89,212,.15);color:var(--at);border:1px solid rgba(155,89,212,.3)}
+.bedit{background:none;border:1px solid var(--br);color:var(--mu);font-family:'DM Mono',monospace;font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer}
+.bedit:hover{border-color:var(--ac);color:var(--ac)}
+.tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;border:1px solid var(--br);color:var(--mu)}
+.tag.pr{border-color:rgba(244,162,97,.4);color:var(--wn)}
+.tag.np{border-color:rgba(76,175,120,.4);color:var(--ok)}
+.tag.sg{border-color:rgba(90,138,196,.4);color:var(--vd)}
+.loader{text-align:center;padding:80px;color:var(--mu)}
+.spin{font-size:28px;animation:spin 1s linear infinite;display:inline-block;margin-bottom:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;right:20px;padding:9px 16px;border-radius:var(--r);font-size:12px;font-weight:500;opacity:0;transition:opacity .2s;z-index:999;pointer-events:none}
+.toast.show{opacity:1}
+.toast.ok{background:var(--ok);color:#000}
+.toast.err{background:var(--nk);color:#fff}
+.contrib-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.contrib{font-size:10px;background:var(--s2);border:1px solid var(--br);border-radius:12px;padding:2px 8px;color:var(--mu)}
+.alert-cors{background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.4);color:var(--wn);padding:12px 16px;border-radius:var(--r);font-size:11px;margin-bottom:14px;line-height:1.6}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--br);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><h1>PIE Matrix <span>Révision collaborative</span></h1></div>
+  <div class="hstats">
+    <div class="pill"><div class="dot" style="background:var(--vd)"></div><span id="sv">—</span></div>
+    <div class="pill"><div class="dot" style="background:var(--at)"></div><span id="sa">—</span></div>
+    <div class="pill"><div class="dot" style="background:var(--ok)"></div><span id="sr">—</span></div>
+    <div class="pill">
+      <input type="text" id="uname" placeholder="Votre prénom…"
+        style="background:none;border:none;color:var(--tx);font-family:'DM Mono',monospace;font-size:11px;width:110px;outline:none"
+        oninput="localStorage.setItem('pie_u',this.value)">
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-sec">
+      <h3>Mode</h3>
+      <div class="mode-btns">
+        <button class="mbtn active" onclick="setMode('a',this)">⚡ Anomalies</button>
+        <button class="mbtn" onclick="setMode('t',this)">⊞ Tout</button>
+      </div>
+    </div>
+    <div class="sb-sec">
+      <h3>Filtres</h3>
+      <div class="fg"><label>Famille</label>
+        <select id="ff" onchange="applyF()">
+          <option value="">Toutes</option>
+          <option>Promo</option>
+          <option>Non promo</option>
+          <option>Siège</option>
+        </select>
+      </div>
+      <div class="fg"><label>Rôle</label>
+        <select id="fr" onchange="applyF()"><option value="">Tous</option></select>
+      </div>
+      <div class="fg"><label>Recherche</label>
+        <input type="text" id="fs" placeholder="Filtrer par interaction…" oninput="applyF()">
+      </div>
+      <div class="fg" id="fat-g"><label>Type anomalie</label>
+        <select id="fat" onchange="applyF()">
+          <option value="">Tous</option>
+          <option value="vide">Vide</option>
+          <option value="atypique">Atypique</option>
+        </select>
+      </div>
+    </div>
+    <div class="sb-sec" style="flex:1;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;margin-bottom:9px">
+        <h3 style="margin-bottom:0">Navigation</h3>
+        <span id="nc" style="font-size:10px;color:var(--mu)"></span>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="sb-sec">
+      <h3>Progression</h3>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:4px">
+        <span>Qualifiées</span><span id="pt">0/0</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar" id="pb" style="width:0%"></div></div>
+      <div class="contrib-list" id="cl"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="loader" id="loader"><div class="spin">⟳</div><div>Chargement des données…</div></div>
+    <div class="ep" id="ep"></div>
+    <div class="mwrap">
+      <table id="tbl" style="display:none">
+        <thead><tr>
+          <th>#</th><th>Rôle</th><th>Famille</th><th>Interaction</th>
+          <th>Source</th><th>Normalisé</th><th>Révisé</th>
+          <th>Effet bot</th><th>Escalade</th><th>Par</th><th></th>
+        </tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+    <div id="empty" style="display:none;text-align:center;padding:60px;color:var(--mu)">🎯 Aucun résultat</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── URL de l'API Google Apps Script ───────────────────────────
+const API = 'https://script.google.com/macros/s/AKfycbwNkXqtx7Q4pyLotCRUWqXAsYIeqY3A_nGmxnzUtRznJiMgP1Nj4Uiaq3ORmPlCIoF-Hw/exec';
+
+let D=[], mode='a', sel=null, pst=null, busy=false;
+document.getElementById('uname').value = localStorage.getItem('pie_u') || '';
+
+// ── Helpers visuels ───────────────────────────────────────────
+function sb(s) {
+  if (!s||s==='vide') return '<span class="sb s-vd">∅ vide</span>';
+  if (s==='atypique'||s==='✅⭐') return '<span class="sb s-at">✅⭐</span>';
+  if (s==='✅') return '<span class="sb s-ok">✅ Autorisé</span>';
+  if (s==='⚠️') return '<span class="sb s-wn">⚠️ Conditionnel</span>';
+  if (s==='❌') return '<span class="sb s-nk">❌ Interdit</span>';
+  return '<span class="sb">'+s+'</span>';
+}
+function tg(f) {
+  if (f==='Promo') return '<span class="tag pr">Promo</span>';
+  if (f==='Non promo') return '<span class="tag np">Non promo</span>';
+  return '<span class="tag sg">Siège</span>';
+}
+function isA(r) { return r.statutNorm==='vide'||r.statutNorm==='atypique'; }
+function isD(r) { return r.statutRevise&&r.statutRevise!==''; }
+function getUser() { return document.getElementById('uname').value||'anonyme'; }
+
+// ── Filtrage ──────────────────────────────────────────────────
+function gf() {
+  const ff=document.getElementById('ff').value,
+    fr=document.getElementById('fr').value,
+    fs=document.getElementById('fs').value.toLowerCase(),
+    fat=document.getElementById('fat').value;
+  return D.filter(r => {
+    if (mode==='a'&&!isA(r)) return false;
+    if (ff&&r.famille!==ff) return false;
+    if (fr&&r.role!==fr) return false;
+    if (fs&&!r.interaction.toLowerCase().includes(fs)) return false;
+    if (fat&&r.statutNorm!==fat) return false;
+    return true;
+  });
+}
+
+// ── Rendu tableau ─────────────────────────────────────────────
+function render() {
+  const rows=gf(), tb=document.getElementById('tb'),
+    tbl=document.getElementById('tbl'), empty=document.getElementById('empty');
+  if (!rows.length) { tbl.style.display='none'; empty.style.display='block'; return; }
+  empty.style.display='none'; tbl.style.display='table';
+  tb.innerHTML = rows.map(r => {
+    const rc = isD(r)&&isA(r)?'rv':isA(r)?'vd':'';
+    const is = r.interaction.length>52?r.interaction.slice(0,52)+'…':r.interaction;
+    const ef = (r.effetBot||'').length>30?(r.effetBot||'').slice(0,30)+'…':(r.effetBot||'—');
+    return '<tr class="'+rc+'">'
+      +'<td style="color:var(--mu);font-size:10px">'+r.idx+'</td>'
+      +'<td><strong>'+r.role+'</strong></td>'
+      +'<td>'+tg(r.famille)+'</td>'
+      +'<td title="'+r.interaction+'">'+is+'</td>'
+      +'<td>'+sb(r.statutSrc)+'</td>'
+      +'<td>'+sb(r.statutNorm)+'</td>'
+      +'<td>'+(r.statutRevise?sb(r.statutRevise):'<span style="color:var(--mu)">—</span>')+'</td>'
+      +'<td style="color:var(--mu);font-size:10px">'+ef+'</td>'
+      +'<td style="font-size:10px">'+(r.escalade||'—')+'</td>'
+      +'<td style="color:var(--mu);font-size:10px">'+(r.revisePar||'—')+'</td>'
+      +'<td><button class="bedit" onclick="openEdit('+r._rowNum+')">✏ Qualifier</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ── Rendu chips ───────────────────────────────────────────────
+function renderChips() {
+  const rows=gf().filter(isA), el=document.getElementById('chips');
+  document.getElementById('nc').textContent = rows.length+' à traiter';
+  if (!rows.length) {
+    el.innerHTML='<div style="color:var(--mu);font-size:11px;text-align:center;padding:16px">✓ Tout qualifié !</div>';
+    return;
+  }
+  el.innerHTML = rows.map(r => {
+    const is=r.interaction.length>34?r.interaction.slice(0,34)+'…':r.interaction;
+    const b=isD(r)?'done':r.statutNorm==='atypique'?'at':'';
+    const bt=isD(r)?'✓ fait':r.statutNorm==='atypique'?'atypique':'vide';
+    return '<div class="chip'+(sel===r._rowNum?' sel':'')+'" onclick="openEdit('+r._rowNum+')">'
+      +'<span style="font-size:13px">'+(r.statutNorm==='atypique'?'⭐':'∅')+'</span>'
+      +'<span style="flex:1;min-width:0">'
+      +'<div class="chip-role">'+r.role+'</div>'
+      +'<div class="chip-inter" title="'+r.interaction+'">'+is+'</div>'
+      +'</span>'
+      +'<span class="chip-badge '+b+'">'+bt+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+// ── Stats ─────────────────────────────────────────────────────
+function renderStats() {
+  const a=D.filter(isA), d=a.filter(isD);
+  const vides=D.filter(r=>r.statutNorm==='vide').length;
+  const at=D.filter(r=>r.statutNorm==='atypique').length;
+  document.getElementById('sv').textContent = vides+' vides';
+  document.getElementById('sa').textContent = at+' atypiques';
+  document.getElementById('sr').textContent = d.length+' résolus';
+  document.getElementById('pt').textContent = d.length+'/'+a.length;
+  document.getElementById('pb').style.width = (a.length?Math.round(d.length/a.length*100):0)+'%';
+  const contribs=[...new Set(D.map(r=>r.revisePar).filter(Boolean))];
+  document.getElementById('cl').innerHTML = contribs.map(c=>'<span class="contrib">'+c+'</span>').join('');
+}
+
+// ── Filtres ───────────────────────────────────────────────────
+function applyF() {
+  const ff=document.getElementById('ff').value;
+  const fr=document.getElementById('fr'), cur=fr.value;
+  const roles=[...new Set(D.filter(r=>!ff||r.famille===ff).map(r=>r.role))].sort();
+  fr.innerHTML='<option value="">Tous</option>'+roles.map(r=>'<option'+(r===cur?' selected':'')+'>'+r+'</option>').join('');
+  render(); renderChips();
+}
+
+function setMode(m, btn) {
+  mode=m;
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('fat-g').style.display = m==='a'?'':'none';
+  render(); renderChips();
+}
+
+// ── Edition ───────────────────────────────────────────────────
+function openEdit(rn) {
+  sel=rn; pst=null;
+  const r=D.find(x=>x._rowNum===rn); if (!r) return;
+  const ep=document.getElementById('ep'); ep.style.display='block';
+  const curOk=r.statutRevise==='✅', curWn=r.statutRevise==='⚠️', curNk=r.statutRevise==='❌';
+  ep.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
+    +'<div><h2>Qualifier cette intersection</h2>'
+    +'<div class="ep-ctx"><strong style="color:var(--tx)">'+r.role+'</strong> '+tg(r.famille)
+    +'<br><span style="color:var(--mu)">⟶</span> '+r.interaction
+    +'<br><span style="color:var(--mu)">Statut source :</span> '+sb(r.statutSrc)
+    +(r.statutRevise?'<br><span style="color:var(--mu)">Actuellement :</span> '+sb(r.statutRevise)+' — '+r.revisePar+' ('+r.dateRevision+')':'')
+    +'</div></div>'
+    +'<button class="btn-no" onclick="closeEdit()">✕</button></div>'
+    +'<div class="stbts">'
+    +'<button class="stbt'+(curOk?' ok':'')+'" onclick="pst=\'✅\';qs(this,\'ok\')">✅<span class="stbt-lbl">Autorisé</span></button>'
+    +'<button class="stbt'+(curWn?' wn':'')+'" onclick="pst=\'⚠️\';qs(this,\'wn\')">⚠️<span class="stbt-lbl">Conditionnel</span></button>'
+    +'<button class="stbt'+(curNk?' nk':'')+'" onclick="pst=\'❌\';qs(this,\'nk\')">❌<span class="stbt-lbl">Interdit</span></button>'
+    +'</div>'
+    +'<label style="display:block;color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Commentaire / justification</label>'
+    +'<textarea id="ec" placeholder="Ajouter une note, condition ou justification…">'+(r.commentaire||'')+'</textarea>'
+    +'<div class="ep-btns">'
+    +'<button class="btn-ok" id="bs" onclick="doSave('+rn+')">✓ Enregistrer dans le Sheet</button>'
+    +'<button class="btn-no" onclick="closeEdit()">Annuler</button>'
+    +(r.statutRevise?'<button class="btn-no" style="border-color:rgba(224,92,92,.4);color:var(--nk)" onclick="doClear('+rn+')">✕ Effacer</button>':'')
+    +'<span id="sm" style="display:none;color:var(--ac);font-size:11px">⟳ Enregistrement…</span>'
+    +'</div>';
+  if (curOk) pst='✅'; else if (curWn) pst='⚠️'; else if (curNk) pst='❌';
+  ep.scrollIntoView({behavior:'smooth',block:'start'});
+  renderChips();
+}
+
+function qs(btn, cls) {
+  document.querySelectorAll('.stbt').forEach(b=>b.className='stbt');
+  btn.classList.add(cls);
+}
+
+function closeEdit() {
+  document.getElementById('ep').style.display='none';
+  sel=null; pst=null; renderChips();
+}
+
+async function doSave(rn) {
+  if (!pst) { toast('Sélectionne un statut','err'); return; }
+  if (busy) return;
+  busy=true;
+  const bs=document.getElementById('bs'), sm=document.getElementById('sm');
+  if (bs) bs.disabled=true;
+  if (sm) sm.style.display='inline';
+  const cm=document.getElementById('ec').value, u=getUser();
+  try {
+    const res = await apiPost({action:'save', rowNum:rn, statutRevise:pst, commentaire:cm, user:u});
+    if (res.error) { toast('Erreur : '+res.error,'err'); return; }
+    const r=D.find(x=>x._rowNum===rn);
+    if (r) { r.statutRevise=pst; r.commentaire=cm; r.revisePar=u; r.dateRevision=res.date||''; }
+    pst=null; closeEdit(); render(); renderChips(); renderStats();
+    toast('✓ Enregistré dans le Sheet !');
+  } catch(e) {
+    toast('Erreur réseau : '+e.message,'err');
+  } finally {
+    busy=false;
+    const b=document.getElementById('bs'); if (b) b.disabled=false;
+    const s=document.getElementById('sm'); if (s) s.style.display='none';
+  }
+}
+
+async function doClear(rn) {
+  if (!confirm('Effacer la révision pour cette ligne ?')) return;
+  try {
+    const res = await apiPost({action:'clear', rowNum:rn});
+    if (res.error) { toast('Erreur : '+res.error,'err'); return; }
+    const r=D.find(x=>x._rowNum===rn);
+    if (r) { r.statutRevise=''; r.commentaire=''; r.revisePar=''; r.dateRevision=''; }
+    closeEdit(); render(); renderChips(); renderStats();
+    toast('Révision effacée');
+  } catch(e) { toast('Erreur : '+e.message,'err'); }
+}
+
+function toast(msg, type) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(type==='err'?'err':'ok');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ── API calls ─────────────────────────────────────────────────
+async function apiGet() {
+  const r = await fetch(API+'?action=getData', {method:'GET', mode:'cors'});
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function apiPost(body) {
+  const r = await fetch(API, {
+    method:'POST', mode:'cors',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+// ── Init ──────────────────────────────────────────────────────
+async function init() {
+  try {
+    const data = await apiGet();
+    document.getElementById('loader').style.display='none';
+    if (data.error) {
+      document.getElementById('loader').innerHTML='<div style="color:var(--nk);padding:20px">'+data.error+'</div>';
+      return;
+    }
+    D = data.rows;
+    applyF();
+    renderStats();
+  } catch(e) {
+    document.getElementById('loader').innerHTML =
+      '<div style="color:var(--nk);padding:20px">Erreur de chargement : '+e.message+'<br><br>'
+      +'<span style="color:var(--mu);font-size:11px">Vérifiez que le déploiement GAS est bien configuré avec les headers CORS.</span></div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
